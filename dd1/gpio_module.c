@@ -2,7 +2,7 @@
 #include <linux/cdev.h>
 #include <linux/module.h>
 #include <linux/io.h>
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("HJ PARK");
@@ -39,6 +39,12 @@ static char msg[STR_SIZE] = {0};
 
 struct cdev gpio_cdev;
 
+// 함수원형 선언 
+static int gpio_open(struct inode *, struct file *);
+static int gpio_close(struct inode *, struct file *);
+static ssize_t gpio_read(struct file*, char *, size_t, loff_t *);
+static ssize_t gpio_write(struct file*, const char *, size_t, loff_t *);
+
 static struct file_operations gpio_fops = {
 		.owner = THIS_MODULE,
 		.read   = gpio_read,
@@ -65,11 +71,11 @@ static int gpio_close(struct inode *inod, struct file *fil)
 	return 0;
 }
 
-static ssize_t gpio_read(struct file *inode, const char *buff, size_t len, loff_t *off)
+static ssize_t gpio_read(struct file *inode, char *buff, size_t len, loff_t *off)
 {
 	// app에서 read()함수가 호출될 때마다 gpio_read()함수가 호출된다.
 	int count;
-	strcat(msg, "from kernel);
+	strcat(msg, "from kernel");
 	count = copy_to_user(buff, msg, strlen(msg)+1);
 
 	printk(KERN_INFO "GPIO Device read:%s\n", msg);
