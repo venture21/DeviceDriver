@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define BUFSIZE	50
+#define BUFSIZE 	50
 
 int main(int argc, char** argv)
 {
@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 	int fd;
 	int count;
 	
-	memset(buf, 0,0 BUFSIZE);
+	memset(buf, 0, BUFSIZE);
 	
 	printf("GPIO Set : %s\n", argv[1]);
 
