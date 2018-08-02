@@ -4,6 +4,7 @@
 #include <linux/io.h>
 #include <linux/uaccess.h>
 #include <linux/gpio.h>
+#include <linux/interrupt.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("HJ PARK");
@@ -13,12 +14,14 @@ MODULE_DESCRIPTION("RASPBERRY PI GPIO LED DRIVER");
 #define GPIO_MINOR 0
 #define GPIO_DEVICE "gpioled"
 #define GPIO_LED		17	// Raspi GPIO17 -> LED
+#define GPIO_SW		18	// Raspi GPIO18 -> SW
 
 #define STR_SIZE 100
 
 static char msg[STR_SIZE] = {0};
 
 struct cdev gpio_cdev;
+static int switch_irq;
 
 // 함수원형 선언 
 static int gpio_open(struct inode *, struct file *);
@@ -35,6 +38,21 @@ static struct file_operations gpio_fops = {
 };
 
 volatile unsigned int *gpio;
+
+
+// 
+static irqreturn_t isr_func(int irq, void *data)
+{
+	// GPIO18번 스위치에서 IRQ Rising Edge발생 && LED가 OFF일때
+	static int count;
+	if(irq==switch_irq && !gpio_get_value(GPIO_LED))
+		gpio_set_value(GPIO_LED, 1);
+	else
+		gpio_set_value(GPIO_LED, 0);
+	
+	printk(KERN_INFO "Called isr_func():%d\n", ++count);
+	return IRQ_HANDLED;
+}
 
 static int gpio_open(struct inode *inod, struct file *fil)
 {
@@ -111,12 +129,31 @@ int initModule(void)
 	printk(KERN_INFO "'chmod  666 /dev/%s'\n", GPIO_DEVICE);
 	
 	// gpio.h에 정의된 gpio_request함수를 사용
+	// LED pin에 대한 요청
 	err = gpio_request(GPIO_LED, "LED");
 	if(err==-EBUSY)
 	{
-		printk(KERN_INFO "Error gpio_request\n");
+		printk(KERN_INFO "Error gpio_request : LED\n");
 		return -1;
 	}
+	
+	// SW pin에 대한 요청
+	err = gpio_request(GPIO_SW, "SWITCH");
+	if(err==-EBUSY)
+	{
+		printk(KERN_INFO "Error gpio_request : SW\n");
+		return -1;
+	}
+	
+	// GPIO 인터럽트 번호를 할당
+	switch_irq =gpio_to_irq(GPIO_SW);
+	err = request_irq(switch_irq, isr_func, IRQF_TRIGGER_RISING, "switch", NULL);
+	if(err)
+	{
+		printk(KERN_INFO "Error request_irq\n");
+		return -1;
+	}
+	
 	
 	gpio_direction_output(GPIO_LED, 0);
 	
