@@ -87,7 +87,7 @@ static ssize_t gpio_write(struct file *inode, const char *buff, size_t len, loff
 	int count;
 	memset(msg, 0, STR_SIZE);
 	count = copy_from_user(msg,buff,len);
-	(strcmp(msg,"0"))?GPIO_CLR(GPIO_LED):GPIO_SET(GPIO_LED);
+	(!strcmp(msg,"0"))?GPIO_CLR(GPIO_LED):GPIO_SET(GPIO_LED);
 	printk(KERN_INFO "GPIO Device write : $s\n", msg);
 	
 	return (ssize_t) count;
