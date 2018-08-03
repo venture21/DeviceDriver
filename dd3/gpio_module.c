@@ -1,10 +1,11 @@
-#include <linux/fs.h>
-#include <linux/cdev.h>
-#include <linux/module.h>
-#include <linux/io.h>
-#include <linux/uaccess.h>
-#include <linux/gpio.h>
-#include <linux/interrupt.h>
+#include <linux/fs.h>				//open(), read(), write(), close()
+#include <linux/cdev.h>			//register_chrdev_region(), cdev_init()
+#include <linux/module.h>		// device Driver
+#include <linux/io.h>				// ioremap(), iounmap() 삭제 해도 됨
+#include <linux/uaccess.h>		// copy_from_user(), copy_to_user()
+#include <linux/gpio.h>			// request_gpio(), gpio_set_value()
+#include <linux/interrupt.h>	// gpio_to_irq(), request_irq()
+#include <linux/timer.h>			// init_timer(), add_timer(), del_timer()
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("HJ PARK");
@@ -22,6 +23,7 @@ static char msg[STR_SIZE] = {0};
 
 struct cdev gpio_cdev;
 static int switch_irq;
+static struct timer_list timer;	// 타이머 처리를 위한 구조체
 
 // 함수원형 선언 
 static int gpio_open(struct inode *, struct file *);
@@ -40,7 +42,18 @@ static struct file_operations gpio_fops = {
 volatile unsigned int *gpio;
 
 
-// 
+static void timer_func(unsigned long data)
+{
+	gpio_set_value(GPIO_LED, data);
+	if(data)
+		timer.data = 0;
+	else
+		timer.data = 1;
+	
+	timer.expires = jiffies + (1*HZ);	
+	add_timer(&timer);
+}
+ 
 static irqreturn_t isr_func(int irq, void *data)
 {
 	// GPIO18번 스위치에서 IRQ Rising Edge발생 && LED가 OFF일때
@@ -92,7 +105,18 @@ static ssize_t gpio_write(struct file *inode, const char *buff, size_t len, loff
 	memset(msg, 0, STR_SIZE);
 	count = copy_from_user(msg,buff,len);
 
-	gpio_set_value(GPIO_LED, (!strcmp(msg,"0"))?0:1);
+	if(!strcmp(msg,"0"))
+	{
+		init_timer(&timer);
+		timer.function = timer_func;
+		timer.data = 1L;
+		timer.expires = jiffies + (1*HZ);
+		add_timer(&timer);
+		
+	}
+
+
+	//gpio_set_value(GPIO_LED, (!strcmp(msg,"0"))?0:1);
 
 	printk(KERN_INFO "GPIO Device write : $s\n", msg);
 	
@@ -164,12 +188,16 @@ void cleanupModule(void)
 {
 	dev_t devno;
 	devno = MKDEV(GPIO_MAJOR, GPIO_MINOR);
+	del_timer_sync(&timer);
 	
 	// 1. 문자 디바이스의 등록을 해제한다.
 	unregister_chrdev_region(devno, 1);
 	
 	// 2. 문자 디바이스의 구조체를 삭제한다.
 	cdev_del(&gpio_cdev);
+	
+	// 3. 등록된 switch_irq의 인터럽트 해제 
+	free_irq(switch_irq, NULL);
 	
 	gpio_direction_output(GPIO_LED, 0);
 	gpio_free(GPIO_LED);

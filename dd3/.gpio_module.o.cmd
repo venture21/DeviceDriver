@@ -1,8 +1,8 @@
-cmd_/home/pi/raspiEx/DeviceDriver/dd1/gpio_module.o := gcc -Wp,-MD,/home/pi/raspiEx/DeviceDriver/dd1/.gpio_module.o.d  -nostdinc -isystem /usr/lib/gcc/arm-linux-gnueabihf/6/include -I./arch/arm/include -I./arch/arm/include/generated  -I./include -I./arch/arm/include/uapi -I./arch/arm/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -D__KERNEL__ -mlittle-endian -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar -Werror-implicit-function-declaration -Wno-format-security -std=gnu89 -fno-PIE -fno-dwarf2-cfi-asm -fno-omit-frame-pointer -mapcs -mno-sched-prolog -fno-ipa-sra -mabi=aapcs-linux -mno-thumb-interwork -mfpu=vfp -funwind-tables -marm -D__LINUX_ARM_ARCH__=7 -march=armv7-a -msoft-float -Uarm -fno-delete-null-pointer-checks -Wno-frame-address -O2 --param=allow-store-data-races=0 -DCC_HAVE_ASM_GOTO -Wframe-larger-than=1024 -fno-stack-protector -Wno-unused-but-set-variable -Wno-unused-const-variable -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-var-tracking-assignments -pg -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fno-merge-all-constants -fmerge-constants -fno-stack-check -fconserve-stack -Werror=implicit-int -Werror=strict-prototypes -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init  -DMODULE  -DKBUILD_BASENAME='"gpio_module"'  -DKBUILD_MODNAME='"gpio_module"' -c -o /home/pi/raspiEx/DeviceDriver/dd1/.tmp_gpio_module.o /home/pi/raspiEx/DeviceDriver/dd1/gpio_module.c
+cmd_/home/pi/raspiEx/DeviceDriver/dd3/gpio_module.o := gcc -Wp,-MD,/home/pi/raspiEx/DeviceDriver/dd3/.gpio_module.o.d  -nostdinc -isystem /usr/lib/gcc/arm-linux-gnueabihf/6/include -I./arch/arm/include -I./arch/arm/include/generated  -I./include -I./arch/arm/include/uapi -I./arch/arm/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -D__KERNEL__ -mlittle-endian -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar -Werror-implicit-function-declaration -Wno-format-security -std=gnu89 -fno-PIE -fno-dwarf2-cfi-asm -fno-omit-frame-pointer -mapcs -mno-sched-prolog -fno-ipa-sra -mabi=aapcs-linux -mno-thumb-interwork -mfpu=vfp -funwind-tables -marm -D__LINUX_ARM_ARCH__=7 -march=armv7-a -msoft-float -Uarm -fno-delete-null-pointer-checks -Wno-frame-address -O2 --param=allow-store-data-races=0 -DCC_HAVE_ASM_GOTO -Wframe-larger-than=1024 -fno-stack-protector -Wno-unused-but-set-variable -Wno-unused-const-variable -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-var-tracking-assignments -pg -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fno-merge-all-constants -fmerge-constants -fno-stack-check -fconserve-stack -Werror=implicit-int -Werror=strict-prototypes -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init  -DMODULE  -DKBUILD_BASENAME='"gpio_module"'  -DKBUILD_MODNAME='"gpio_module"' -c -o /home/pi/raspiEx/DeviceDriver/dd3/.tmp_gpio_module.o /home/pi/raspiEx/DeviceDriver/dd3/gpio_module.c
 
-source_/home/pi/raspiEx/DeviceDriver/dd1/gpio_module.o := /home/pi/raspiEx/DeviceDriver/dd1/gpio_module.c
+source_/home/pi/raspiEx/DeviceDriver/dd3/gpio_module.o := /home/pi/raspiEx/DeviceDriver/dd3/gpio_module.c
 
-deps_/home/pi/raspiEx/DeviceDriver/dd1/gpio_module.o := \
+deps_/home/pi/raspiEx/DeviceDriver/dd3/gpio_module.o := \
   include/linux/compiler_types.h \
     $(wildcard include/config/enable/must/check.h) \
     $(wildcard include/config/enable/warn/deprecated.h) \
@@ -715,7 +715,116 @@ deps_/home/pi/raspiEx/DeviceDriver/dd1/gpio_module.o := \
     $(wildcard include/config/cpu/cp15/mmu.h) \
   arch/arm/include/generated/asm/extable.h \
   include/asm-generic/extable.h \
+  include/linux/gpio.h \
+    $(wildcard include/config/gpiolib.h) \
+    $(wildcard include/config/arch/have/custom/gpio/h.h) \
+  arch/arm/include/asm/gpio.h \
+    $(wildcard include/config/arch/nr/gpio.h) \
+  include/asm-generic/gpio.h \
+  include/linux/of.h \
+    $(wildcard include/config/sparc.h) \
+    $(wildcard include/config/of/dynamic.h) \
+    $(wildcard include/config/attach/node.h) \
+    $(wildcard include/config/detach/node.h) \
+    $(wildcard include/config/add/property.h) \
+    $(wildcard include/config/remove/property.h) \
+    $(wildcard include/config/update/property.h) \
+    $(wildcard include/config/of/numa.h) \
+    $(wildcard include/config/no/change.h) \
+    $(wildcard include/config/change/add.h) \
+    $(wildcard include/config/change/remove.h) \
+    $(wildcard include/config/of/resolve.h) \
+    $(wildcard include/config/of/overlay.h) \
+  include/linux/mod_devicetable.h \
+  include/linux/property.h \
+  include/linux/fwnode.h \
+  include/linux/gpio/driver.h \
+    $(wildcard include/config/gpio/generic.h) \
+    $(wildcard include/config/gpiolib/irqchip.h) \
+    $(wildcard include/config/of/gpio.h) \
+  include/linux/irq.h \
+    $(wildcard include/config/generic/irq/effective/aff/mask.h) \
+    $(wildcard include/config/generic/irq/ipi.h) \
+    $(wildcard include/config/irq/domain/hierarchy.h) \
+    $(wildcard include/config/generic/irq/migration.h) \
+    $(wildcard include/config/generic/pending/irq.h) \
+    $(wildcard include/config/hardirqs/sw/resend.h) \
+    $(wildcard include/config/generic/irq/legacy/alloc/hwirq.h) \
+    $(wildcard include/config/generic/irq/legacy.h) \
+  include/linux/irqhandler.h \
+  include/linux/irqreturn.h \
+  include/linux/irqnr.h \
+  include/uapi/linux/irqnr.h \
+  include/linux/slab.h \
+    $(wildcard include/config/debug/slab.h) \
+    $(wildcard include/config/failslab.h) \
+    $(wildcard include/config/have/hardened/usercopy/allocator.h) \
+    $(wildcard include/config/slab.h) \
+    $(wildcard include/config/slub.h) \
+  include/linux/kmemleak.h \
+  include/linux/kasan.h \
+  arch/arm/include/asm/irq.h \
+    $(wildcard include/config/sparse/irq.h) \
+    $(wildcard include/config/multi/irq/handler.h) \
+  arch/arm/include/generated/asm/irq_regs.h \
+  include/asm-generic/irq_regs.h \
+  include/linux/irqdesc.h \
+    $(wildcard include/config/irq/preflow/fasteoi.h) \
+    $(wildcard include/config/proc/fs.h) \
+    $(wildcard include/config/generic/irq/debugfs.h) \
+    $(wildcard include/config/handle/domain/irq.h) \
+  arch/arm/include/asm/hw_irq.h \
+  include/linux/irqchip/chained_irq.h \
+  include/linux/irqdomain.h \
+    $(wildcard include/config/irq/domain.h) \
+  include/linux/pinctrl/pinctrl.h \
+    $(wildcard include/config/generic/pinconf.h) \
+  include/linux/pinctrl/pinconf-generic.h \
+    $(wildcard include/config/bias/bus/hold.h) \
+    $(wildcard include/config/bias/disable.h) \
+    $(wildcard include/config/bias/high/impedance.h) \
+    $(wildcard include/config/bias/pull/down.h) \
+    $(wildcard include/config/bias/pull/pin/default.h) \
+    $(wildcard include/config/bias/pull/up.h) \
+    $(wildcard include/config/drive/open/drain.h) \
+    $(wildcard include/config/drive/open/source.h) \
+    $(wildcard include/config/drive/push/pull.h) \
+    $(wildcard include/config/drive/strength.h) \
+    $(wildcard include/config/input/debounce.h) \
+    $(wildcard include/config/input/enable.h) \
+    $(wildcard include/config/input/schmitt.h) \
+    $(wildcard include/config/input/schmitt/enable.h) \
+    $(wildcard include/config/low/power/mode.h) \
+    $(wildcard include/config/output/enable.h) \
+    $(wildcard include/config/output.h) \
+    $(wildcard include/config/power/source.h) \
+    $(wildcard include/config/sleep/hardware/state.h) \
+    $(wildcard include/config/slew/rate.h) \
+    $(wildcard include/config/end.h) \
+    $(wildcard include/config/max.h) \
+    $(wildcard include/config/debug/fs.h) \
+  include/linux/pinctrl/machine.h \
+  include/linux/gpio/consumer.h \
+    $(wildcard include/config/gpio/sysfs.h) \
+  include/linux/interrupt.h \
+    $(wildcard include/config/irq/forced/threading.h) \
+    $(wildcard include/config/generic/irq/probe.h) \
+    $(wildcard include/config/irq/timings.h) \
+  include/linux/hardirq.h \
+  include/linux/ftrace_irq.h \
+    $(wildcard include/config/ftrace/nmi/enter.h) \
+    $(wildcard include/config/hwlat/tracer.h) \
+  include/linux/vtime.h \
+    $(wildcard include/config/virt/cpu/accounting.h) \
+    $(wildcard include/config/irq/time/accounting.h) \
+  include/linux/context_tracking_state.h \
+    $(wildcard include/config/context/tracking.h) \
+  include/linux/static_key.h \
+  arch/arm/include/asm/hardirq.h \
+  include/linux/irq_cpustat.h \
+  arch/arm/include/asm/sections.h \
+  include/asm-generic/sections.h \
 
-/home/pi/raspiEx/DeviceDriver/dd1/gpio_module.o: $(deps_/home/pi/raspiEx/DeviceDriver/dd1/gpio_module.o)
+/home/pi/raspiEx/DeviceDriver/dd3/gpio_module.o: $(deps_/home/pi/raspiEx/DeviceDriver/dd3/gpio_module.o)
 
-$(deps_/home/pi/raspiEx/DeviceDriver/dd1/gpio_module.o):
+$(deps_/home/pi/raspiEx/DeviceDriver/dd3/gpio_module.o):
