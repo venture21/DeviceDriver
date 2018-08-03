@@ -824,6 +824,21 @@ deps_/home/pi/raspiEx/DeviceDriver/dd3/gpio_module.o := \
   include/linux/irq_cpustat.h \
   arch/arm/include/asm/sections.h \
   include/asm-generic/sections.h \
+  include/linux/signal.h \
+  include/linux/signalfd.h \
+    $(wildcard include/config/signalfd.h) \
+  include/uapi/linux/signalfd.h \
+  include/linux/sched/signal.h \
+    $(wildcard include/config/sched/autogroup.h) \
+    $(wildcard include/config/bsd/process/acct.h) \
+    $(wildcard include/config/taskstats.h) \
+    $(wildcard include/config/audit.h) \
+    $(wildcard include/config/stack/growsup.h) \
+  include/linux/sched/jobctl.h \
+  include/linux/sched/task.h \
+    $(wildcard include/config/have/copy/thread/tls.h) \
+    $(wildcard include/config/have/exit/thread.h) \
+    $(wildcard include/config/arch/wants/dynamic/task/struct.h) \
 
 /home/pi/raspiEx/DeviceDriver/dd3/gpio_module.o: $(deps_/home/pi/raspiEx/DeviceDriver/dd3/gpio_module.o)
 

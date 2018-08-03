@@ -6,6 +6,12 @@
 #include <linux/gpio.h>			// request_gpio(), gpio_set_value()
 #include <linux/interrupt.h>	// gpio_to_irq(), request_irq()
 #include <linux/timer.h>			// init_timer(), add_timer(), del_timer()
+#include <linux/signal.h>		// signal사용
+#include <asm/siginfo.h>			// siginfo 구조체를 사용하기 위해
+#include <linux/signalfd.h>
+
+
+
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("HJ PARK");
@@ -24,6 +30,10 @@ static char msg[STR_SIZE] = {0};
 struct cdev gpio_cdev;
 static int switch_irq;
 static struct timer_list timer;	// 타이머 처리를 위한 구조체
+static struct task_struct *task;
+pid_t pid;
+char   pid_valid;
+
 
 // 함수원형 선언 
 static int gpio_open(struct inode *, struct file *);
@@ -46,11 +56,16 @@ static void timer_func(unsigned long data)
 {
 	gpio_set_value(GPIO_LED, data);
 	if(data)
+	{
 		timer.data = 0;
+		timer.expires = jiffies + (1*HZ);			
+	}
 	else
+	{
 		timer.data = 1;
+		timer.expires = jiffies + ((1*HZ)>>1);
+	}
 	
-	timer.expires = jiffies + (1*HZ);	
 	add_timer(&timer);
 }
  
@@ -59,7 +74,24 @@ static irqreturn_t isr_func(int irq, void *data)
 	// GPIO18번 스위치에서 IRQ Rising Edge발생 && LED가 OFF일때
 	static int count;
 	if(irq==switch_irq && !gpio_get_value(GPIO_LED))
+	{
 		gpio_set_value(GPIO_LED, 1);
+		
+		static struct siginfo sinfo;
+		memset(&sinfo, 0, sizeof(struct siginfo));
+		sinfo.si_signo = SIGIO;
+		sinfo.si_code = SI_USER;
+		
+		task = pid_task(find_vpid(pid), PIDTYPE_PID);
+		if(task!=NULL)
+		{
+			send_sig_info(SIGIO, &sinfo, task);
+		}
+		else
+		{
+			printk(KERN_INFO "Error : I don't know user pid\n");
+		}
+	}
 	else
 		gpio_set_value(GPIO_LED, 0);
 	
@@ -102,10 +134,21 @@ static ssize_t gpio_read(struct file *inode, char *buff, size_t len, loff_t *off
 static ssize_t gpio_write(struct file *inode, const char *buff, size_t len, loff_t *off)
 {
 	int count;
+	char *cmd, *str;
+	char *sep=":";
+	char *endptr, *pidstr;
 	memset(msg, 0, STR_SIZE);
 	count = copy_from_user(msg,buff,len);
+	str = kstrdup(msg, GFP_KERNEL);
+	// "0:3124"
+	cmd = strsep(&str,sep);
+	cmd[1]='\0';		//문자열을 만들기 위해 NULL문자 삽입
+	pidstr = strsep(&str,sep);
+	printk(KERN_INFO "app: %s\n", msg);
+	printk(KERN_INFO "Command : %s, pid : %s\n", cmd,  pidstr);
 
-	if(!strcmp(msg,"0"))
+/*
+	if(!strcmp(cmd,"0"))
 	{
 		init_timer(&timer);
 		timer.function = timer_func;
@@ -114,11 +157,24 @@ static ssize_t gpio_write(struct file *inode, const char *buff, size_t len, loff
 		add_timer(&timer);
 		
 	}
+*/
 
+	// 시그널 발생시 보낼 PID값을 등록
+	pid = simple_strtol(pidstr, &endptr, 10);
+	printk(KERN_INFO "pid=%d\n", pid);
+	if(endptr !=NULL) 
+	{
+		task = pid_task(find_vpid(pid),PIDTYPE_PID);
+		if(task==NULL)
+		{
+			printk(KERN_INFO "Error : Can't find PID from user application\n");
+			return 0;
+		}
+	}
+	
+	gpio_set_value(GPIO_LED, (!strcmp(msg,"0"))?0:1);
 
-	//gpio_set_value(GPIO_LED, (!strcmp(msg,"0"))?0:1);
-
-	printk(KERN_INFO "GPIO Device write : $s\n", msg);
+	//printk(KERN_INFO "GPIO Device write : $s\n", msg);
 	
 	return (ssize_t) count;
 }
