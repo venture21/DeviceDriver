@@ -7,12 +7,31 @@
 
 #define BUFSIZE 	50
 
-void signal_handler(int signum)
+int fd;
+char buf[BUFSIZE];
+
+void signal_handler2(int signum)
 {
 	static int count=0;
+	
 	printf("user app : signal is catched\n");
 	if(signum==SIGIO)
 	{
+		read(fd,buf,5);
+		printf("key_value=%s\n",buf);
+	}
+	count++;
+	if(count==10)
+		exit(1);
+}
+
+void signal_handler(int signum)
+{
+	
+	static int count=0;
+	if(signum==SIGIO)
+	{
+
 		printf("SIGIO\n");
 	}
 	count++;
@@ -20,15 +39,15 @@ void signal_handler(int signum)
 		exit(1);
 }
 
+
 int main(int argc, char** argv)
 {
-	char buf[BUFSIZE];
+
 	char i=0;
-	int fd;
 	int count;
 	
 	memset(buf, 0, BUFSIZE);
-	signal(SIGIO, signal_handler);
+	signal(SIGIO, signal_handler2);
 	
 	printf("GPIO Set : %s\n", argv[1]);
 

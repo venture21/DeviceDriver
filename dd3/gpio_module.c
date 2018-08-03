@@ -21,14 +21,17 @@ MODULE_DESCRIPTION("RASPBERRY PI GPIO LED DRIVER");
 #define GPIO_MINOR 0
 #define GPIO_DEVICE "gpioled"
 #define GPIO_LED		17	// Raspi GPIO17 -> LED
-#define GPIO_SW		18	// Raspi GPIO18 -> SW
+#define GPIO_SW1		18	// Raspi GPIO18 -> SW1
+#define GPIO_SW2		27	// Raspi GPIO27 -> SW2
 
 #define STR_SIZE 100
 
 static char msg[STR_SIZE] = {0};
 
 struct cdev gpio_cdev;
-static int switch_irq;
+static int switch_irq1;
+static int switch_irq2;
+int key_value=0;
 static struct timer_list timer;	// 타이머 처리를 위한 구조체
 static struct task_struct *task;
 pid_t pid;
@@ -73,10 +76,9 @@ static irqreturn_t isr_func(int irq, void *data)
 {
 	// GPIO18번 스위치에서 IRQ Rising Edge발생 && LED가 OFF일때
 	static int count;
-	if(irq==switch_irq && !gpio_get_value(GPIO_LED))
+	if(irq==switch_irq1 || irq==switch_irq2)
 	{
-		gpio_set_value(GPIO_LED, 1);
-		
+	
 		static struct siginfo sinfo;
 		memset(&sinfo, 0, sizeof(struct siginfo));
 		sinfo.si_signo = SIGIO;
@@ -92,8 +94,11 @@ static irqreturn_t isr_func(int irq, void *data)
 			printk(KERN_INFO "Error : I don't know user pid\n");
 		}
 	}
-	else
-		gpio_set_value(GPIO_LED, 0);
+
+	if(irq ==	switch_irq1)
+		key_value = 1;
+	else if(irq==switch_irq2)
+		key_value = 2;
 	
 	printk(KERN_INFO "Called isr_func():%d\n", ++count);
 	return IRQ_HANDLED;
@@ -119,13 +124,9 @@ static ssize_t gpio_read(struct file *inode, char *buff, size_t len, loff_t *off
 {
 	// app에서 read()함수가 호출될 때마다 gpio_read()함수가 호출된다.
 	int count;
-	
-	if(gpio_get_value(GPIO_LED))
-		msg[0]='1';
-	else
-		msg[0]='0';
 
-	strcat(msg, "from kernel");
+	sprintf(msg, "%d", key_value);
+	//strcat(msg, "from kernel");
 	count = copy_to_user(buff, msg, strlen(msg)+1);
 	printk(KERN_INFO "GPIO Device read:%s\n", msg);
 	return (ssize_t)count;
@@ -217,8 +218,8 @@ int initModule(void)
 		return -1;
 	}
 	
-	// SW pin에 대한 요청
-	err = gpio_request(GPIO_SW, "SWITCH");
+	// SW1 pin에 대한 요청
+	err = gpio_request(GPIO_SW1, "SWITCH");
 	if(err==-EBUSY)
 	{
 		printk(KERN_INFO "Error gpio_request : SW\n");
@@ -226,8 +227,25 @@ int initModule(void)
 	}
 	
 	// GPIO 인터럽트 번호를 할당
-	switch_irq =gpio_to_irq(GPIO_SW);
-	err = request_irq(switch_irq, isr_func, IRQF_TRIGGER_RISING, "switch", NULL);
+	switch_irq1 =gpio_to_irq(GPIO_SW1);
+	err = request_irq(switch_irq1, isr_func, IRQF_TRIGGER_RISING, "switch", NULL);
+	if(err)
+	{
+		printk(KERN_INFO "Error request_irq\n");
+		return -1;
+	}
+	
+		// SW2 pin에 대한 요청
+	err = gpio_request(GPIO_SW2, "SWITCH");
+	if(err==-EBUSY)
+	{
+		printk(KERN_INFO "Error gpio_request : SW2\n");
+		return -1;
+	}
+	
+	// GPIO 인터럽트 번호를 할당
+	switch_irq2 =gpio_to_irq(GPIO_SW2);
+	err = request_irq(switch_irq2, isr_func, IRQF_TRIGGER_RISING, "switch", NULL);
 	if(err)
 	{
 		printk(KERN_INFO "Error request_irq\n");
@@ -253,11 +271,13 @@ void cleanupModule(void)
 	cdev_del(&gpio_cdev);
 	
 	// 3. 등록된 switch_irq의 인터럽트 해제 
-	free_irq(switch_irq, NULL);
+	free_irq(switch_irq1, NULL);
+	free_irq(switch_irq2, NULL);
 	
 	gpio_direction_output(GPIO_LED, 0);
 	gpio_free(GPIO_LED);
-	gpio_free(GPIO_SW);
+	gpio_free(GPIO_SW1);
+	gpio_free(GPIO_SW2);
 			
 	printk(KERN_INFO "operation is done! : cleanupModule()\n");		
 }
